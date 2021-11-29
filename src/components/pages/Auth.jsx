@@ -2,15 +2,16 @@ import React, {useContext} from 'react'
 import {useMutation} from 'react-query'
 import {useFormik} from 'formik'
 import {CurrentUserContext} from '../../contexts/ContextUser'
-import {register} from '../../DAL/auth'
+import {register, login} from '../../DAL/auth'
 import {LOGGED_IN} from '../../state/Auth/constants'
-// import { useHistory } from 'react-router-dom'
 
 export const Auth = (props) => {
-   const path = props.match.path ===
+   const path = props.match.path === '/register'
+   const request = path ? register : login
    const [currentUserState, dispatch] = useContext(CurrentUserContext)
-   const {isLoading, mutate} = useMutation(register, {
+   const {isLoading, mutate} = useMutation(request, {
       onSuccess: (data) => {
+         localStorage.setItem('token', data.data.token)
          dispatch({
             type: LOGGED_IN,
             token: data.data.token
@@ -31,33 +32,37 @@ export const Auth = (props) => {
       }
    })
 
-   console.log(path)
+   console.log(currentUserState)
 
    return (
       <div>
          {
-            !currentUserState.auth.loggedIn
-               ? (<form onSubmit={form.handleSubmit}>
+            !currentUserState.loggedIn
+               ? (
                   <div>
-                     <p>Login</p>
-                     <input
-                        id='login'
-                        type={'text'}
-                        onChange={form.handleChange}
-                     />
-                  </div>
-                  <div>
-                     <p>Password</p>
-                     <input
-                        id='password'
-                        type={'text'}
-                        onChange={form.handleChange}
-                     />
-                  </div>
-                  <div>
-                     <button type='submit'>Auth</button>
-                  </div>
-               </form>)
+                     <h2>{path ? 'Register' : 'Login'}</h2>
+                     <form onSubmit={form.handleSubmit}>
+                        <div>
+                           <p>Email</p>
+                           <input
+                              id='login'
+                              type={'text'}
+                              onChange={form.handleChange}
+                           />
+                        </div>
+                        <div>
+                           <p>Password</p>
+                           <input
+                              id='password'
+                              type={'text'}
+                              onChange={form.handleChange}
+                           />
+                        </div>
+                        <div>
+                           <button type='submit'>Auth</button>
+                        </div>
+                     </form>
+                  </div>)
                : (<h2>Вы успешно вошли</h2>)
          }
          {
